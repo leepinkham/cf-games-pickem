@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 CrossFit Games — Ultimate Pick'em</title>
+<meta property="og:title" content="2026 CrossFit Games — Ultimate Pick'em">
+<meta property="og:description" content="Live league standings, boards & trash talk. Jul 24–26 • SAP Center, San Jose.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,500;0,600;0,700;0,800;1,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0a0c; --surface:#141417; --surface2:#1b1b20; --line:#2a2a31;
+  --ink:#f5f5f2; --ink2:#b9b9c0; --ink3:#7e7e88;
+  --red:#e3241d; --red-dim:#8f1713;
+  --gold:#e8b93b; --silver:#c0c4cc; --bronze:#c98a52;
+  --good:#4cc38a; --good-bg:rgba(76,195,138,.13);
+  --near:#e0a93e; --near-bg:rgba(224,169,62,.12);
+  --miss:#55555e;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:'Inter',system-ui,sans-serif;font-size:15px;line-height:1.45;}
+.wrap{max-width:1280px;margin:0 auto;padding:0 16px 60px}
+.disp{font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;letter-spacing:.03em}
+
+/* ---------- header ---------- */
+header{position:sticky;top:0;z-index:50;background:linear-gradient(180deg,rgba(10,10,12,.97),rgba(10,10,12,.92));backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.hbar{max-width:1280px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.logo{display:flex;align-items:center;gap:10px}
+.logo .mark{width:34px;height:34px;background:var(--red);display:grid;place-items:center;font-family:'Barlow Condensed';font-weight:800;font-size:20px;color:#fff;clip-path:polygon(0 0,100% 0,100% 78%,78% 100%,0 100%)}
+.logo h1{font-size:24px;font-weight:800;line-height:1}
+.logo h1 span{color:var(--red)}
+.logo .sub{font-size:12px;color:var(--ink3);letter-spacing:.14em;font-weight:600}
+.hspacer{flex:1}
+.pill{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);background:var(--surface);padding:6px 12px;font-size:12px;font-weight:600;color:var(--ink2);border-radius:2px}
+.pill .dot{width:8px;height:8px;border-radius:50%;background:var(--ink3)}
+.pill.live .dot{background:var(--red);animation:blink 1.2s infinite}
+.pill.live{color:#fff;border-color:var(--red-dim)}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+nav.jump{display:flex;gap:2px}
+nav.jump a{color:var(--ink2);text-decoration:none;font-family:'Barlow Condensed';text-transform:uppercase;font-weight:600;font-size:15px;letter-spacing:.06em;padding:6px 10px}
+nav.jump a:hover{color:#fff;background:var(--surface2)}
+
+/* ---------- hero strip ---------- */
+.hero{padding:26px 0 6px;display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.hero .t1{font-size:clamp(34px,6vw,58px);font-weight:800;line-height:.95}
+.hero .t1 em{font-style:normal;color:var(--red)}
+.hero .meta{font-size:13px;color:var(--ink3);font-weight:600;letter-spacing:.12em;text-transform:uppercase;margin-top:8px}
+.count{display:flex;gap:8px;text-align:center}
+.count .cell{background:var(--surface);border:1px solid var(--line);padding:8px 0;width:74px}
+.count .num{font-family:'Barlow Condensed';font-size:30px;font-weight:800;line-height:1}
+.count .lab{font-size:10px;color:var(--ink3);letter-spacing:.18em;text-transform:uppercase;margin-top:3px}
+
+/* ---------- layout ---------- */
+.grid{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:18px;margin-top:18px}
+@media(max-width:980px){.grid{grid-template-columns:1fr}}
+section.card{background:var(--surface);border:1px solid var(--line)}
+.card>.chead{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line)}
+.chead .bar{width:5px;height:20px;background:var(--red)}
+.chead h2{font-size:21px;font-weight:700}
+.chead .tag{margin-left:auto;font-size:11px;color:var(--ink3);letter-spacing:.1em;text-transform:uppercase;font-weight:600}
+
+/* ---------- standings ---------- */
+.stand{padding:8px 10px 14px}
+.srow{display:grid;grid-template-columns:44px minmax(0,1fr) auto auto;align-items:center;gap:10px;padding:9px 10px;border-bottom:1px solid rgba(42,42,49,.6)}
+.srow:last-child{border-bottom:none}
+.srow .rk{font-family:'Barlow Condensed';font-weight:800;font-size:24px;text-align:center;color:var(--ink2)}
+.srow.r1{background:linear-gradient(90deg,rgba(232,185,59,.10),transparent 65%)}
+.srow.r1 .rk{color:var(--gold)}
+.srow.r2 .rk{color:var(--silver)}
+.srow.r3 .rk{color:var(--bronze)}
+.srow .who{min-width:0}
+.srow .nm{font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.srow .hits{font-size:12px;color:var(--ink3);margin-top:1px}
+.srow .hits b{color:var(--good);font-weight:600}
+.mv{font-size:12px;font-weight:700;width:34px;text-align:center}
+.mv.up{color:var(--good)} .mv.dn{color:var(--red)} .mv.fl{color:var(--ink3)}
+.srow .pts{font-family:'Barlow Condensed';font-weight:800;font-size:28px;min-width:56px;text-align:right}
+.srow .pts small{font-size:12px;color:var(--ink3);font-family:'Inter';font-weight:600;letter-spacing:.08em}
+.tiebar{padding:8px 16px;font-size:12px;color:var(--ink3);border-top:1px solid var(--line)}
+
+/* ---------- live leaderboard ---------- */
+.lb-tabs{display:flex;margin-left:auto}
+.lb-tabs button{background:none;border:1px solid var(--line);color:var(--ink2);font-family:'Barlow Condensed';text-transform:uppercase;font-weight:700;font-size:15px;letter-spacing:.06em;padding:5px 16px;cursor:pointer}
+.lb-tabs button.on{background:var(--red);border-color:var(--red);color:#fff}
+.lb{padding:6px 8px 12px}
+.lbrow{display:grid;grid-template-columns:36px minmax(0,1fr) auto;align-items:center;gap:8px;padding:7px 10px;border-bottom:1px solid rgba(42,42,49,.6);font-size:14px}
+.lbrow:last-child{border-bottom:none}
+.lbrow .rk{font-family:'Barlow Condensed';font-weight:800;font-size:19px;color:var(--ink2);text-align:center}
+.lbrow.podium .rk{color:var(--gold)}
+.lbrow .nm{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lbrow .picked{font-size:10.5px;color:var(--ink3);margin-left:6px;letter-spacing:.05em}
+.lbrow .sc{color:var(--ink2);font-weight:600;font-size:13px}
+.lb-empty{padding:26px 18px;color:var(--ink3);font-size:14px;text-align:center}
+.lb-note{padding:8px 16px;border-top:1px solid var(--line);font-size:12px;color:var(--ink3);display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+
+/* ---------- boards ---------- */
+#boards{margin-top:26px}
+.bhead{display:flex;align-items:end;gap:12px;margin-bottom:12px}
+.bhead h2{font-size:30px;font-weight:800}
+.bhead .legend{margin-left:auto;display:flex;gap:14px;font-size:12px;color:var(--ink2);flex-wrap:wrap}
+.key{display:inline-flex;align-items:center;gap:6px}
+.key .sw{width:12px;height:12px;border-radius:2px}
+.boards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px}
+.board{background:var(--surface);border:1px solid var(--line)}
+.board .top{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line)}
+.board .av{width:34px;height:34px;border-radius:50%;background:var(--surface2);display:grid;place-items:center;font-family:'Barlow Condensed';font-weight:800;font-size:15px;color:var(--ink2);border:1px solid var(--line);flex:none}
+.board.leader .av{border-color:var(--gold);color:var(--gold)}
+.board .pn{font-weight:700;font-size:15px;line-height:1.15}
+.board .pr{font-size:11.5px;color:var(--ink3)}
+.board .bp{margin-left:auto;text-align:right}
+.board .bp .n{font-family:'Barlow Condensed';font-weight:800;font-size:26px;line-height:1}
+.board .bp .l{font-size:10px;color:var(--ink3);letter-spacing:.14em;text-transform:uppercase}
+.cols{display:grid;grid-template-columns:1fr 1fr}
+.col{padding:8px 10px 10px}
+.col+.col{border-left:1px solid var(--line)}
+.col h4{font-size:12.5px;font-weight:700;color:var(--ink3);letter-spacing:.1em;text-transform:uppercase;padding:2px 4px 6px;font-family:'Barlow Condensed';font-size:14px}
+.pick{display:flex;align-items:center;gap:7px;padding:4px 6px;border-radius:3px;margin-bottom:3px;font-size:12.8px;border:1px solid transparent}
+.pick .pos{font-family:'Barlow Condensed';font-weight:700;color:var(--ink3);width:15px;flex:none;font-size:13px}
+.pick .an{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500}
+.pick .pp{margin-left:auto;font-size:11px;font-weight:700;flex:none}
+.pick.exact{background:var(--good-bg);border-color:rgba(76,195,138,.35)}
+.pick.exact .pp{color:var(--good)}
+.pick.near{background:var(--near-bg);border-color:rgba(224,169,62,.3)}
+.pick.near .pp{color:var(--near)}
+.pick.miss .an{color:var(--ink3)}
+.pick.miss .pp{color:var(--miss)}
+.pick .why{font-size:9.5px;color:var(--ink3);flex:none}
+.perfect{margin:2px 10px 10px;padding:6px 10px;background:rgba(232,185,59,.12);border:1px solid rgba(232,185,59,.4);color:var(--gold);font-size:12px;font-weight:700;text-align:center;letter-spacing:.06em}
+
+/* ---------- rules ---------- */
+#rules{margin-top:26px}
+.rules-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;padding:14px}
+.rule{background:var(--surface2);border:1px solid var(--line);padding:12px}
+.rule .v{font-family:'Barlow Condensed';font-weight:800;font-size:30px;color:var(--red);line-height:1}
+.rule .d{font-size:12.5px;color:var(--ink2);margin-top:4px}
+.rules-note{padding:0 16px 14px;font-size:12.5px;color:var(--ink3)}
+
+/* ---------- chat ---------- */
+#chat{margin-top:26px}
+.chatbox{display:flex;flex-direction:column;height:420px}
+.msgs{flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.msg{max-width:86%}
+.msg .mh{font-size:11.5px;color:var(--ink3);margin-bottom:2px}
+.msg .mh b{color:var(--red);font-weight:700;font-size:12.5px}
+.msg .mb{background:var(--surface2);border:1px solid var(--line);padding:8px 12px;border-radius:2px 10px 10px 10px;font-size:14px;word-wrap:break-word}
+.msg.mine{align-self:flex-end}
+.msg.mine .mb{background:#26262e;border-radius:10px 2px 10px 10px}
+.msg.mine .mh{text-align:right}
+.chat-in{display:flex;gap:8px;padding:12px;border-top:1px solid var(--line);flex-wrap:wrap}
+.chat-in select,.chat-in input{background:var(--surface2);border:1px solid var(--line);color:var(--ink);padding:10px 12px;font-family:'Inter';font-size:14px;border-radius:2px}
+.chat-in select{width:190px;flex:none}
+.chat-in input{flex:1;min-width:180px}
+.chat-in button{background:var(--red);color:#fff;border:none;font-family:'Barlow Condensed';text-transform:uppercase;font-weight:800;font-size:17px;letter-spacing:.08em;padding:10px 22px;cursor:pointer}
+.chat-in button:hover{background:#c51e18}
+.chat-dead{padding:20px;text-align:center;color:var(--ink3);font-size:13px}
+
+footer{margin-top:36px;padding-top:18px;border-top:1px solid var(--line);font-size:12px;color:var(--ink3);display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.previewbanner{background:var(--near-bg);border:1px solid rgba(224,169,62,.4);color:var(--near);font-size:12.5px;font-weight:600;padding:8px 14px;margin-top:14px;text-align:center;letter-spacing:.04em}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hbar">
+    <div class="logo">
+      <div class="mark">26</div>
+      <div>
+        <h1 class="disp">Games <span>Pick'em</span></h1>
+        <div class="sub disp">ULTIMATE TRACKER</div>
+      </div>
+    </div>
+    <div class="hspacer"></div>
+    <nav class="jump disp">
+      <a href="#standings">Standings</a><a href="#livelb">Live</a><a href="#boards">Boards</a><a href="#rules">Rules</a><a href="#chat">Chat</a>
+    </nav>
+    <div class="pill" id="statusPill"><span class="dot"></span><span id="statusTxt">PRE-GAMES</span></div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="hero">
+    <div>
+      <div class="t1 disp">The Fittest.<br><em>Your picks.</em></div>
+      <div class="meta" id="heroMeta">JUL 24–26 · SAP CENTER · SAN JOSE, CA</div>
+    </div>
+    <div class="count" id="countdown" title="Time until individual competition begins">
+      <div class="cell"><div class="num disp" id="cd-d">–</div><div class="lab">Days</div></div>
+      <div class="cell"><div class="num disp" id="cd-h">–</div><div class="lab">Hrs</div></div>
+      <div class="cell"><div class="num disp" id="cd-m">–</div><div class="lab">Min</div></div>
+      <div class="cell"><div class="num disp" id="cd-s">–</div><div class="lab">Sec</div></div>
+    </div>
+  </div>
+
+  <div id="previewBanner" class="previewbanner" style="display:none">PREVIEW MODE — mock results for demonstration. Real scores appear once the Games begin.</div>
+
+  <div class="grid">
+    <section class="card" id="standings">
+      <div class="chead"><div class="bar"></div><h2 class="disp">League Standings</h2><span class="tag" id="standTag">All tied · waiting on the barbell</span></div>
+      <div class="stand" id="standList"></div>
+      <div class="tiebar" id="updatedBar">Waiting for first results update…</div>
+    </section>
+
+    <section class="card" id="livelb">
+      <div class="chead">
+        <div class="bar"></div><h2 class="disp">Games Leaderboard</h2>
+        <div class="lb-tabs disp"><button id="tabM" class="on">Men</button><button id="tabW">Women</button></div>
+      </div>
+      <div class="lb" id="lbList"><div class="lb-empty">Live top-10 appears here when competition starts Friday.<br>Athletes in someone's picks get flagged.</div></div>
+      <div class="lb-note"><span id="lbNote">Source: games.crossfit.com</span><span id="lbUpdated"></span></div>
+    </section>
+  </div>
+
+  <div id="boards">
+    <div class="bhead">
+      <h2 class="disp">The Boards</h2>
+      <div class="legend">
+        <span class="key"><span class="sw" style="background:var(--good-bg);border:1px solid var(--good)"></span>✓ Exact spot</span>
+        <span class="key"><span class="sw" style="background:var(--near-bg);border:1px solid var(--near)"></span>◐ In top 5, wrong spot</span>
+        <span class="key"><span class="sw" style="background:var(--surface2);border:1px solid var(--line)"></span>Outside top 5</span>
+      </div>
+    </div>
+    <div class="boards-grid" id="boardsGrid"></div>
+  </div>
+
+  <section class="card" id="rules">
+    <div class="chead"><div class="bar"></div><h2 class="disp">Scoring — points stack</h2><span class="tag">Per athlete, per division</span></div>
+    <div class="rules-grid">
+      <div class="rule"><div class="v disp">+1</div><div class="d">Your pick finishes anywhere in the real top 5</div></div>
+      <div class="rule"><div class="v disp">+2</div><div class="d">Your pick lands in the <b>exact placement</b> you called</div></div>
+      <div class="rule"><div class="v disp">+3</div><div class="d">Bonus when that exact call is a podium spot (1st–3rd)</div></div>
+      <div class="rule"><div class="v disp">+5</div><div class="d">Bonus for nailing the individual champion</div></div>
+      <div class="rule"><div class="v disp">+10</div><div class="d">Perfect board: all five placements exact, in order</div></div>
+    </div>
+    <div class="rules-note">Points stack: an exact champion pick = 1+2+3+5 = <b>11 pts</b> · exact 2nd/3rd = <b>6 pts</b> · exact 4th/5th = <b>3 pts</b> · right athlete, wrong spot = <b>1 pt</b>. Scored separately for men's and women's boards, then combined. Perfect board bonus is per division.</div>
+  </section>
+
+  <section class="card" id="chat">
+    <div class="chead"><div class="bar"></div><h2 class="disp">The Smack Talk</h2><span class="tag" id="chatTag"></span></div>
+    <div class="chatbox">
+      <div class="msgs" id="msgs"></div>
+      <div class="chat-in" id="chatIn">
+        <select id="chatName"><option value="">Who are you?</option></select>
+        <input id="chatText" maxlength="500" placeholder="Talk your talk…" autocomplete="off">
+        <button id="chatSend" class="disp">Send</button>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <span>2026 CrossFit Games Ultimate Pick'em League · 10 athletes of the couch</span>
+    <span>Results source: games.crossfit.com · Not affiliated with CrossFit, LLC</span>
+  </footer>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+/* ================= CONFIG ================= */
+const SUPABASE_URL = 'https://ehqkouwszczxajjuflmx.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_z9Jot29GepOSZ0Mo9fdwWQ_xN9W5O83';
+const COMP_START = new Date('2026-07-24T15:00:00Z'); // Fri 8:00 AM PT
+const PREVIEW = new URLSearchParams(location.search).has('preview');
+
+/* ================= LEAGUE DATA ================= */
+const PARTICIPANTS = [
+ {id:'blobby',  name:'Dr Blobby', real:'',
+  men:['Jayson Hopper','Ricky Garard','Jay Crouch','James Sprague','Dallin Pepper'],
+  women:['Lucy Campbell','Paige Rodgers','Arielle Loewen','Aimee Cringle','Madeline Sturt']},
+ {id:'tbent',   name:'Tbentlaaaaa', real:'',
+  men:['Ricky Garard','Jayson Hopper','Jay Crouch','Dallin Pepper','Justin Medeiros'],
+  women:['Emma Lawson','Lucy Campbell','Paige Rodgers','Aimee Cringle','Olivia Kerstetter']},
+ {id:'tommy',   name:'Tommy', real:'Glizzy King',
+  men:['Jayson Hopper','James Sprague','Jeffrey Adler','Dallin Pepper','Ricky Garard'],
+  women:['Emma Lawson','Paige Rodgers','Alex Gazan','Olivia Kerstetter','Haley Adams']},
+ {id:'lee',     name:'Big Daddy Lee', real:'Lee Pinkham',
+  men:['Dallin Pepper','Ricky Garard','James Sprague','Jayson Hopper','Jay Crouch'],
+  women:['Alex Gazan','Paige Rodgers','Emma Lawson','Lucy Campbell','Mirjam von Rohr']},
+ {id:'brian',   name:'Diabetuuuus Brian', real:'Brian Shepherd',
+  men:['Dallin Pepper','Jeffrey Adler','James Sprague','Ricky Garard','Jayson Hopper'],
+  women:['Emma Lawson','Alex Gazan','Olivia Kerstetter','Lucy Campbell','Arielle Loewen']},
+ {id:'collin',  name:'Mista Waltas', real:'Half Send · Collin',
+  men:['Dallin Pepper','James Sprague','Jeffrey Adler','Roman Khrennikov','Colten Mertens'],
+  women:['Emma Lawson','Lucy Campbell','Arielle Loewen','Alexis Raptis','Danielle Brandon']},
+ {id:'cam',     name:'Mr CFT Himself', real:'Cam',
+  men:['Dallin Pepper','Ricky Garard','Austin Hatfield','Jeffrey Adler','Jayson Hopper'],
+  women:['Olivia Kerstetter','Lucy Campbell','Arielle Loewen','Anikha Greer','Haley Adams']},
+ {id:'robbie',  name:'Tiger-Wish-He-Could', real:'Robbie B',
+  men:['Dallin Pepper','Ricky Garard','Jayson Hopper','Roman Khrennikov','Jay Crouch'],
+  women:['Alex Gazan','Aimee Cringle','Lucy Campbell','Paige Rodgers','Emma Lawson']},
+ {id:'logan',   name:'Zaddy 1876', real:'Logan B',
+  men:['James Sprague','Jayson Hopper','Roman Khrennikov','Guilherme Malheiros','Dallin Pepper'],
+  women:['Lucy Campbell','Aimee Cringle','Emma Lawson','Alexis Raptis','Arielle Loewen']},
+ {id:'jay',     name:'Mr Whiskey', real:'Jay F',
+  men:['Dallin Pepper','Justin Medeiros','James Sprague','Jeffrey Adler','Ty Jenkins'],
+  women:['Emma Lawson','Lucy Campbell','Alexis Raptis','Olivia Kerstetter','Danielle Brandon']},
+];
+
+const MOCK_LIVE = {
+  status:'live', note:'PREVIEW · mock data — Event 4 of 12 complete',
+  updatedAt:new Date().toISOString(),
+  men:[['Dallin Pepper',412],['James Sprague',396],['Ricky Garard',380],['Jayson Hopper',344],['Roman Khrennikov',333],['Jeffrey Adler',321],['Jay Crouch',300],['Ty Jenkins',288],['Austin Hatfield',270],['Justin Medeiros',262]].map((a,i)=>({rank:i+1,name:a[0],points:a[1]})),
+  women:[['Emma Lawson',430],['Lucy Campbell',401],['Alex Gazan',377],['Olivia Kerstetter',350],['Paige Rodgers',340],['Aimee Cringle',322],['Alexis Raptis',310],['Danielle Brandon',295],['Arielle Loewen',280],['Haley Adams',266]].map((a,i)=>({rank:i+1,name:a[0],points:a[1]})),
+};
+
+/* ================= SCORING ================= */
+const norm = s => (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z]/g,'');
+function scoreBoard(picks, top5names){
+  const res = picks.map((nm,i)=>{
+    const ai = top5names.findIndex(t=>norm(t)===norm(nm));
+    let p=0, cls='miss', why='';
+    if(ai>=0){
+      p+=1; cls='near'; why=`finished ${ai+1}${['st','nd','rd','th','th'][ai]}`;
+      if(ai===i){
+        p+=2; cls='exact'; why='exact';
+        if(i<3)p+=3;
+        if(i===0)p+=5;
+      }
+    }
+    return {pts:p, cls, why, actual:ai>=0?ai+1:null};
+  });
+  const exactCount = res.filter(r=>r.cls==='exact').length;
+  const perfect = exactCount===5;
+  const total = res.reduce((s,r)=>s+r.pts,0) + (perfect?10:0);
+  return {total, res, exactCount, perfect};
+}
+function computeStandings(live){
+  const mTop = live && live.men ? live.men.slice(0,5).map(a=>a.name) : [];
+  const wTop = live && live.women ? live.women.slice(0,5).map(a=>a.name) : [];
+  return PARTICIPANTS.map(p=>{
+    const m = mTop.length? scoreBoard(p.men,mTop) : {total:0,res:null,exactCount:0,perfect:false};
+    const w = wTop.length? scoreBoard(p.women,wTop) : {total:0,res:null,exactCount:0,perfect:false};
+    return {p, m, w, total:m.total+w.total, exact:m.exactCount+w.exactCount};
+  }).sort((a,b)=> b.total-a.total || b.exact-a.exact || a.p.name.localeCompare(b.p.name));
+}
+
+/* ================= RENDER ================= */
+const $ = id => document.getElementById(id);
+let LIVE=null, PREV_RANKS=null, curTab='men';
+
+function initials(n){return n.split(/\s+/).map(w=>w[0]).slice(0,2).join('').toUpperCase()}
+
+function renderStandings(){
+  const rows = computeStandings(LIVE);
+  const started = LIVE && LIVE.men && LIVE.men.length;
+  const el = $('standList'); el.innerHTML='';
+  const leaderId = started? rows[0].p.id : null;
+  rows.forEach((r,i)=>{
+    const rank=i+1;
+    let mv='<span class="mv fl">—</span>';
+    if(PREV_RANKS && PREV_RANKS[r.p.id]){
+      const d = PREV_RANKS[r.p.id]-rank;
+      if(d>0) mv=`<span class="mv up">▲${d}</span>`;
+      else if(d<0) mv=`<span class="mv dn">▼${-d}</span>`;
+    }
+    const div=document.createElement('div');
+    div.className='srow r'+rank;
+    div.innerHTML=`<div class="rk disp">${started?rank:'–'}</div>
+      <div class="who"><div class="nm">${r.p.name}${r.p.real?` <span style="color:var(--ink3);font-weight:400;font-size:12px">· ${r.p.real}</span>`:''}</div>
+      <div class="hits">${started? `<b>${r.exact}</b> exact · M ${r.m.total} / W ${r.w.total}${(r.m.perfect||r.w.perfect)?' · 🏆 PERFECT BOARD':''}` : 'Board locked in'}</div></div>
+      ${started?mv:'<span class="mv fl"></span>'}
+      <div class="pts disp">${r.total}<small> PTS</small></div>`;
+    el.appendChild(div);
+  });
+  $('standTag').textContent = started? 'Auto-scored from live results' : 'All tied · waiting on the barbell';
+  window._leaderId = leaderId;
+}
+
+function renderLive(){
+  const el=$('lbList');
+  const data = LIVE && LIVE[curTab] && LIVE[curTab].length? LIVE[curTab] : null;
+  if(!data){ el.innerHTML='<div class="lb-empty">Live top-10 appears here when competition starts Friday.<br>Athletes in someone\'s picks get flagged.</div>'; return; }
+  const pickedBy = {};
+  PARTICIPANTS.forEach(p=>{ (curTab==='men'?p.men:p.women).forEach(nm=>{ (pickedBy[norm(nm)]=pickedBy[norm(nm)]||[]).push(p.name.split(' ')[0]); }); });
+  el.innerHTML='';
+  data.slice(0,10).forEach(a=>{
+    const pb = pickedBy[norm(a.name)];
+    const div=document.createElement('div');
+    div.className='lbrow'+(a.rank<=3?' podium':'');
+    div.innerHTML=`<div class="rk disp">${a.rank}</div>
+      <div class="nm">${a.name}${pb?`<span class="picked">● picked by ${pb.length}</span>`:''}</div>
+      <div class="sc">${a.points!=null?a.points+' pts':''}</div>`;
+    el.appendChild(div);
+  });
+}
+
+function renderBoards(){
+  const started = LIVE && LIVE.men && LIVE.men.length;
+  const rows = computeStandings(LIVE);
+  const grid=$('boardsGrid'); grid.innerHTML='';
+  rows.forEach((r,idx)=>{
+    const b=document.createElement('div');
+    b.className='board'+(started&&idx===0?' leader':'');
+    const col=(title,picks,sc)=>{
+      let h=`<div class="col"><h4>${title}</h4>`;
+      picks.forEach((nm,i)=>{
+        const s=sc&&sc.res?sc.res[i]:null;
+        const cls=s?s.cls:'';
+        const pp=s? (s.pts>0?`+${s.pts}`:'0') : '';
+        const mark=s? (s.cls==='exact'?'✓ ':s.cls==='near'?'◐ ':'') : '';
+        const why=s&&s.cls==='near'?`<span class="why">${s.why}</span>`:'';
+        h+=`<div class="pick ${cls}"><span class="pos">${i+1}</span><span class="an">${mark}${nm}</span>${why}<span class="pp">${pp}</span></div>`;
+      });
+      return h+'</div>';
+    };
+    b.innerHTML=`<div class="top">
+        <div class="av disp">${initials(r.p.name)}</div>
+        <div><div class="pn">${r.p.name}</div><div class="pr">${r.p.real||'&nbsp;'}</div></div>
+        <div class="bp"><div class="n disp">${r.total}</div><div class="l">Points</div></div>
+      </div>
+      <div class="cols">${col('Men',r.p.men,r.m)}${col('Women',r.p.women,r.w)}</div>
+      ${(r.m.perfect?'<div class="perfect">★ PERFECT MEN\'S BOARD +10</div>':'')}${(r.w.perfect?'<div class="perfect">★ PERFECT WOMEN\'S BOARD +10</div>':'')}`;
+    grid.appendChild(b);
+  });
+}
+
+function renderStatus(){
+  const pill=$('statusPill'), txt=$('statusTxt');
+  const st = LIVE? LIVE.status : 'pre';
+  pill.classList.toggle('live', st==='live');
+  txt.textContent = st==='live'?'LIVE':(st==='final'?'FINAL':'PRE-GAMES');
+  if(LIVE&&LIVE.updatedAt){
+    const d=new Date(LIVE.updatedAt);
+    $('updatedBar').textContent = `Scores updated ${d.toLocaleString([],{weekday:'short',hour:'numeric',minute:'2-digit'})}` + (LIVE.note? ` · ${LIVE.note}`:'');
+    $('lbUpdated').textContent = `Updated ${d.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}`;
+  }
+  if(LIVE&&LIVE.note) $('lbNote').textContent = LIVE.note;
+}
+
+function renderAll(){ renderStandings(); renderLive(); renderBoards(); renderStatus(); }
+
+/* tabs */
+$('tabM').onclick=()=>{curTab='men';$('tabM').classList.add('on');$('tabW').classList.remove('on');renderLive();};
+$('tabW').onclick=()=>{curTab='women';$('tabW').classList.add('on');$('tabM').classList.remove('on');renderLive();};
+
+/* countdown */
+setInterval(()=>{
+  const ms = COMP_START - new Date();
+  if(ms<=0){ $('countdown').style.display='none'; return; }
+  const d=Math.floor(ms/864e5), h=Math.floor(ms%864e5/36e5), m=Math.floor(ms%36e5/6e4), s=Math.floor(ms%6e4/1e3);
+  $('cd-d').textContent=d; $('cd-h').textContent=h; $('cd-m').textContent=m; $('cd-s').textContent=s;
+},1000);
+
+/* ================= CHAT ================= */
+const sel=$('chatName');
+PARTICIPANTS.forEach(p=>{const o=document.createElement('option');o.value=p.name;o.textContent=p.name+(p.real?` (${p.real})`:'');sel.appendChild(o);});
+try{ if(localStorage.pickemName) sel.value=localStorage.pickemName; }catch(e){}
+
+let db=null;
+function addMsg(m,mine){
+  const d=document.createElement('div');
+  d.className='msg'+(mine?' mine':'');
+  const t=new Date(m.ts||Date.now());
+  d.innerHTML=`<div class="mh"><b>${escapeHtml(m.name)}</b> · ${t.toLocaleString([],{weekday:'short',hour:'numeric',minute:'2-digit'})}</div><div class="mb">${escapeHtml(m.text)}</div>`;
+  $('msgs').appendChild(d);
+  $('msgs').scrollTop=$('msgs').scrollHeight;
+}
+function escapeHtml(s){return (s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function sendMsg(){
+  const name=sel.value, text=$('chatText').value.trim();
+  if(!name){ sel.focus(); sel.style.borderColor='var(--red)'; return; }
+  if(!text) return;
+  try{ localStorage.pickemName=name; }catch(e){}
+  if(db){ db.from('messages').insert({name, text}).then(({error})=>{ if(error) console.warn('chat send failed', error.message); }); }
+  else { addMsg({name,text,ts:Date.now()},true); }
+  $('chatText').value='';
+}
+$('chatSend').onclick=sendMsg;
+$('chatText').addEventListener('keydown',e=>{if(e.key==='Enter')sendMsg();});
+
+/* ================= LIVE DATA PIPELINE =================
+   Each viewer's browser pulls the official leaderboard via CORS relays.
+   Fresh data is cached to Firebase so everyone benefits from any one
+   successful fetch (and Firebase serves as fallback when relays fail). */
+const COMP_END = new Date('2026-07-27T08:00:00Z');
+const API = d => `https://c3po.crossfit.com/api/leaderboards/v2/competitions/finals/2026/leaderboards?final=261&division=${d}&sort=0&page=1`;
+const RELAYS = [
+  u => u, // direct (in case CORS opens up)
+  u => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u),
+  u => 'https://corsproxy.io/?url=' + encodeURIComponent(u),
+];
+async function fetchDivision(d){
+  const url = API(d);
+  for(const wrap of RELAYS){
+    try{
+      const r = await fetch(wrap(url), {signal: AbortSignal.timeout(9000)});
+      if(!r.ok) continue;
+      const j = await r.json();
+      const rows = (j.leaderboardRows||[]).map(row=>({
+        rank: parseInt(row.overallRank,10) || null,
+        name: row.entrant && row.entrant.competitorName || '',
+        points: parseInt(row.overallScore,10) || 0,
+      })).filter(a=>a.name);
+      if(rows.length) return rows;
+    }catch(e){/* next relay */}
+  }
+  return null;
+}
+const fingerprint = v => !v?'':['men','women'].map(k=>(v[k]||[]).map(a=>`${a.rank}:${norm(a.name)}:${a.points}`).join('|')).join('||');
+function ranksOf(live){
+  const out={}; computeStandings(live).forEach((r,i)=>out[r.p.id]=i+1); return out;
+}
+async function refreshLive(){
+  const [men, women] = await Promise.all([fetchDivision(1), fetchDivision(2)]);
+  if(!men && !women) return false;
+  const ranked = arr => arr && arr.some(a=>a.rank);
+  if(!ranked(men) && !ranked(women)) return false; // roster only, comp not started
+  const now = new Date();
+  const next = {
+    status: now > COMP_END ? 'final' : 'live',
+    note: 'Source: games.crossfit.com · auto-refreshing',
+    updatedAt: now.toISOString(),
+    men: (men||[]).filter(a=>a.rank).sort((a,b)=>a.rank-b.rank).slice(0,15),
+    women: (women||[]).filter(a=>a.rank).sort((a,b)=>a.rank-b.rank).slice(0,15),
+  };
+  const changed = fingerprint(next) !== fingerprint(LIVE);
+  if(changed){
+    next.prevRanks = LIVE && LIVE.men && LIVE.men.length ? ranksOf(LIVE) : null;
+    if(!next.prevRanks && PREV_RANKS) next.prevRanks = PREV_RANKS;
+    LIVE = next; PREV_RANKS = next.prevRanks; renderAll();
+    if(db){
+      try{
+        const {data:cur} = await db.from('live').select('data,updated_at').eq('id',1).maybeSingle();
+        const curFp = cur && cur.data ? fingerprint(cur.data) : '';
+        const curTs = cur ? new Date(cur.updated_at).getTime() : 0;
+        if(curFp !== fingerprint(next) || Date.now()-curTs > 10*60*1000){
+          await db.from('live').upsert({id:1, data:next, updated_at:new Date().toISOString()});
+        }
+      }catch(e){}
+    }
+  }
+  return true;
+}
+function scheduleRefresh(){
+  const now = new Date();
+  const inWindow = now >= new Date(COMP_START.getTime()-3600e3) && now <= COMP_END;
+  refreshLive();
+  setInterval(refreshLive, inWindow? 120e3 : 15*60e3);
+  document.addEventListener('visibilitychange',()=>{ if(!document.hidden) refreshLive(); });
+}
+
+/* ================= DATA WIRING ================= */
+function applyShared(v){
+  if(v && v.men && v.men.length && fingerprint(v)!==fingerprint(LIVE)){
+    // only accept shared data newer than what we already show
+    if(!LIVE || !LIVE.updatedAt || new Date(v.updatedAt) > new Date(LIVE.updatedAt)){
+      LIVE=v; PREV_RANKS=v.prevRanks||null; renderAll();
+    }
+  }
+}
+if(SUPABASE_URL && SUPABASE_ANON_KEY && window.supabase){
+  db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  // chat: initial load (last 200) + realtime inserts, deduped by row id
+  const seenMsg = new Set();
+  const showRow = m => { if(seenMsg.has(m.id)) return; seenMsg.add(m.id); addMsg({name:m.name,text:m.text,ts:m.ts||m.created_at}, m.name===sel.value); };
+  db.from('messages').select('*').order('id',{ascending:false}).limit(200).then(({data})=>{
+    (data||[]).reverse().forEach(showRow);
+    db.channel('chat').on('postgres_changes',{event:'INSERT',schema:'public',table:'messages'},p=>showRow(p.new)).subscribe();
+  });
+  // shared live cache: initial + realtime
+  db.from('live').select('data').eq('id',1).maybeSingle().then(({data})=>{ if(data) applyShared(data.data); });
+  db.channel('live').on('postgres_changes',{event:'*',schema:'public',table:'live'},payload=>{
+    if(payload.new) applyShared(payload.new.data);
+  }).subscribe();
+  $('chatTag').textContent='Live · everyone sees this';
+}else{
+  $('chatTag').textContent='Demo mode — chat connects at launch';
+  addMsg({name:'Commissioner',text:'Chat goes live for the whole league once the site launches. Talk is cheap until Friday anyway. 😤',ts:Date.now()});
+}
+if(PREVIEW){ LIVE=MOCK_LIVE; $('previewBanner').style.display='block'; }
+else scheduleRefresh();
+renderAll();
+</script>
+</body>
+</html>
