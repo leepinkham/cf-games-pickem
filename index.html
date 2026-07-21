@@ -193,6 +193,8 @@ section.card{background:var(--surface);border:1px solid var(--line)}
 .tbadge b{font-family:'Barlow Condensed';letter-spacing:.1em;font-size:12.5px}
 .tbadge.bad{border-color:rgba(227,36,29,.4);background:rgba(227,36,29,.08);color:#f08a85}
 .tbadge .tsub{color:var(--ink2);font-size:11px}
+.pinhint{padding:7px 14px;font-size:12px;color:var(--gold);background:rgba(232,185,59,.07);border-top:1px solid var(--line)}
+#chatPin{width:86px;flex:none;text-align:center;letter-spacing:.2em}
 
 footer{margin-top:36px;padding-top:18px;border-top:1px solid var(--line);font-size:12px;color:var(--ink3);display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
 .previewbanner{background:var(--near-bg);border:1px solid rgba(224,169,62,.4);color:var(--near);font-size:12.5px;font-weight:600;padding:8px 14px;margin-top:14px;text-align:center;letter-spacing:.04em}
@@ -285,8 +287,10 @@ footer{margin-top:36px;padding-top:18px;border-top:1px solid var(--line);font-si
         <input id="pollOpts" maxlength="200" placeholder="Options, comma-separated (2–4) — e.g. Pepper, Garard, the field">
         <button id="pollGo" class="disp">Launch</button><button id="pollX" class="disp alt2">✕</button>
       </div>
+      <div class="pinhint" id="pinHint" style="display:none"></div>
       <div class="chat-in" id="chatIn">
         <select id="chatName"><option value="">Who are you?</option></select>
+        <input id="chatPin" maxlength="4" inputmode="numeric" pattern="[0-9]*" placeholder="PIN" autocomplete="off" style="display:none">
         <input id="chatText" maxlength="500" placeholder="Talk your talk…" autocomplete="off">
         <button id="chatPoll" class="disp alt" title="Start a poll">Poll</button>
         <button id="chatSend" class="disp">Send</button>
@@ -634,17 +638,47 @@ function sortFeed(){
   [...box.children].sort((a,b)=>(+a.dataset.ts||0)-(+b.dataset.ts||0)).forEach(n=>box.appendChild(n));
   box.scrollTop=box.scrollHeight;
 }
+/* self-claim PIN lock: first post under a name sets its 4-digit PIN (enforced server-side) */
+const pinKey = n => 'pickemPin:' + n;
+const claimedCache = {};
+async function updatePinUI(){
+  const name = sel.value, pinEl=$('chatPin'), hint=$('pinHint');
+  if(!db || !name){ pinEl.style.display='none'; hint.style.display='none'; return; }
+  let stored=null; try{ stored = localStorage.getItem(pinKey(name)); }catch(e){}
+  if(stored){ pinEl.style.display='none'; hint.style.display='none'; return; }
+  let claimed = claimedCache[name];
+  if(claimed===undefined){ try{ const {data} = await db.rpc('claim_status',{p_name:name}); claimed = claimedCache[name] = !!data; }catch(e){ claimed=false; } }
+  pinEl.style.display=''; pinEl.style.borderColor='var(--line)';
+  hint.style.display='';
+  hint.textContent = claimed ? `🔒 ${name} is locked — enter the 4-digit PIN (one time on this device).` : `🔓 First post as ${name}: make up a 4-digit PIN to lock the name. This device will remember it.`;
+}
 function sendMsg(){
   const name=sel.value, text=$('chatText').value.trim();
   if(!name){ sel.focus(); sel.style.borderColor='var(--red)'; return; }
   if(!text) return;
   try{ localStorage.pickemName=name; }catch(e){}
-  if(db){ db.from('messages').insert({name, text}).then(({error})=>{ if(error) console.warn('chat send failed', error.message); }); }
-  else { addMsg({name,text,ts:Date.now()},true); }
-  $('chatText').value='';
+  if(!db){ addMsg({name,text,ts:Date.now()},true); $('chatText').value=''; return; }
+  let pin=null; try{ pin = localStorage.getItem(pinKey(name)); }catch(e){}
+  if(!pin) pin = $('chatPin').value.trim();
+  if(!/^[0-9]{4}$/.test(pin||'')){ updatePinUI().then(()=>{ $('chatPin').focus(); $('chatPin').style.borderColor='var(--red)'; }); return; }
+  db.rpc('post_message', {p_name:name, p_pin:pin, p_text:text}).then(({error})=>{
+    if(error){
+      claimedCache[name]=true;
+      try{ localStorage.removeItem(pinKey(name)); }catch(e){}
+      $('chatPin').style.display=''; $('chatPin').value=''; $('chatPin').style.borderColor='var(--red)'; $('chatPin').focus();
+      $('pinHint').style.display='';
+      $('pinHint').textContent = /WRONG_PIN/.test(error.message||'') ? `❌ Wrong PIN for ${name}. If that's really you, text Lee — I can reset it.` : `❌ PIN must be exactly 4 digits.`;
+    } else {
+      try{ localStorage.setItem(pinKey(name), pin); }catch(e){}
+      $('chatPin').style.display='none'; $('pinHint').style.display='none';
+      $('chatText').value='';
+    }
+  });
 }
 $('chatSend').onclick=sendMsg;
 $('chatText').addEventListener('keydown',e=>{if(e.key==='Enter')sendMsg();});
+$('chatPin').addEventListener('keydown',e=>{if(e.key==='Enter')sendMsg();});
+sel.addEventListener('change', updatePinUI);
 /* reactions + poll votes via delegation */
 $('msgs').addEventListener('click', e=>{
   const rx=e.target.closest('.rxbar button');
@@ -798,7 +832,7 @@ function applyShared(v){
 if(SUPABASE_URL && SUPABASE_ANON_KEY && window.supabase){
   db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   const seenMsg=new Set(), seenBot=new Set(), seenPoll=new Set(), seenRx=new Set();
-  const showRow = m => { if(seenMsg.has(m.id)) return; seenMsg.add(m.id); addMsg({id:m.id,name:m.name,text:m.text,ts:m.ts||m.created_at}, m.name===sel.value); };
+  const showRow = m => { if(seenMsg.has(m.id) || m.name==='__test__') return; seenMsg.add(m.id); addMsg({id:m.id,name:m.name,text:m.text,ts:m.ts||m.created_at}, m.name===sel.value); };
   const showBot = b => { if(seenBot.has(b.key)) return; seenBot.add(b.key); addMsg({name:b.name||'Commissioner Bot',text:b.text,ts:b.ts,bot:true}, false); };
   const showPoll = p => { if(seenPoll.has(p.id)) return; seenPoll.add(p.id); addPollCard(p); };
   const takeRx = r => { if(seenRx.has(r.id)) return; seenRx.add(r.id);
@@ -837,6 +871,7 @@ if(SUPABASE_URL && SUPABASE_ANON_KEY && window.supabase){
     if(payload.new) applyShared(payload.new.data);
   }).subscribe();
   $('chatTag').textContent='Live · everyone sees this';
+  updatePinUI();
 }else{
   $('chatTag').textContent='Demo mode — chat connects at launch';
   addMsg({name:'Commissioner',text:'Chat goes live for the whole league once the site launches. Talk is cheap until Friday anyway. 😤',ts:Date.now()});
