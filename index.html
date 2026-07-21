@@ -312,17 +312,17 @@ const PREVIEW = new URLSearchParams(location.search).has('preview');
 const PARTICIPANTS = [
  {id:'blobby',  name:'Dr Blobby', real:'',
   men:['Jayson Hopper','Ricky Garard','Jay Crouch','James Sprague','Dallin Pepper'],
-  women:['Lucy Campbell','Paige Rodgers','Arielle Loewen','Aimee Cringle','Madeline Sturt']},
- {id:'tbent',   name:'Tbentlaaaaa', real:'',
+  women:['Lucy Campbell','Paige Rodgers','Aimee Cringle','Emma Lawson','Madeline Sturt']},
+ {id:'tbent',   name:'Tbentlaaa', real:'',
   men:['Ricky Garard','Jayson Hopper','Jay Crouch','Dallin Pepper','Justin Medeiros'],
   women:['Emma Lawson','Lucy Campbell','Paige Rodgers','Aimee Cringle','Olivia Kerstetter']},
- {id:'tommy',   name:'Tommy', real:'Glizzy King',
+ {id:'tommy',   name:'Glizzy Gobler', real:'Tommy P',
   men:['Jayson Hopper','James Sprague','Jeffrey Adler','Dallin Pepper','Ricky Garard'],
   women:['Emma Lawson','Paige Rodgers','Alex Gazan','Olivia Kerstetter','Haley Adams']},
  {id:'lee',     name:'Big Daddy Lee', real:'Lee Pinkham',
   men:['Dallin Pepper','Ricky Garard','James Sprague','Jayson Hopper','Jay Crouch'],
   women:['Alex Gazan','Paige Rodgers','Emma Lawson','Lucy Campbell','Mirjam von Rohr']},
- {id:'brian',   name:'Diabetuuuus Brian', real:'Brian Shepherd',
+ {id:'brian',   name:'Diabetus Brian', real:'Brian Shepherd',
   men:['Dallin Pepper','Jeffrey Adler','James Sprague','Ricky Garard','Jayson Hopper'],
   women:['Emma Lawson','Alex Gazan','Olivia Kerstetter','Lucy Campbell','Arielle Loewen']},
  {id:'collin',  name:'Mista Waltas', real:'Half Send · Collin',
@@ -336,10 +336,16 @@ const PARTICIPANTS = [
   women:['Alex Gazan','Aimee Cringle','Lucy Campbell','Paige Rodgers','Emma Lawson']},
  {id:'logan',   name:'Zaddy 1876', real:'Logan B',
   men:['James Sprague','Jayson Hopper','Roman Khrennikov','Guilherme Malheiros','Dallin Pepper'],
-  women:['Lucy Campbell','Aimee Cringle','Emma Lawson','Alexis Raptis','Arielle Loewen']},
+  women:['Lucy Campbell','Aimee Cringle','Emma Lawson','Paige Rodgers','Alex Gazan']},
  {id:'jay',     name:'Mr Whiskey', real:'Jay F',
   men:['Dallin Pepper','Justin Medeiros','James Sprague','Jeffrey Adler','Ty Jenkins'],
   women:['Emma Lawson','Lucy Campbell','Alexis Raptis','Olivia Kerstetter','Danielle Brandon']},
+ {id:'clare',   name:'Barbell Queen', real:'Clare K',
+  men:['James Sprague','Jayson Hopper','Ricky Garard','Jay Crouch','Dallin Pepper'],
+  women:['Emma Lawson','Paige Rodgers','Lucy Campbell','Aimee Cringle','Olivia Kerstetter']},
+ {id:'kennedy', name:'Big Kenneth', real:'Kennedy B',
+  men:['Ricky Garard','Jayson Hopper','James Sprague','Roman Khrennikov','Dallin Pepper'],
+  women:['Lucy Campbell','Aimee Cringle','Paige Rodgers','Emma Lawson','Alex Gazan']},
 ];
 
 const MOCK_LIVE = {
@@ -391,11 +397,11 @@ function renderPot(){
 /* ================= TRASH TALK: FLAVORS & TEMPLATES ================= */
 const pickone = a => a[Math.floor(Math.random()*a.length)];
 const FLAVOR = {
-  'Diabetuuuus Brian': {
+  'Diabetus Brian': {
     good: [" Blood sugar stable, board thriving. The pancreas is officially the only thing on his team not working.", " Type 1, rank climbing — the Dexcom and the leaderboard finally agree on something.", " Sugar's flat, picks are hot. Endocrinologist baffled."],
     bad: [" Somebody check his Dexcom — board AND blood sugar in freefall.", " Insulin can't fix that board.", " That crash spiked harder than his glucose after a cheat meal. Juice box for the boy."]
   },
-  'Tbentlaaaaa': {
+  'Tbentlaaa': {
     good: [" Of course — she's always in the kitchen cooking up something goooood. 👩‍🍳"],
     bad: [" Makes sense her picks stink — she's always in the kitchen."]
   },
@@ -838,8 +844,8 @@ if(SUPABASE_URL && SUPABASE_ANON_KEY && window.supabase){
 if(PREVIEW){
   LIVE=MOCK_LIVE; $('previewBanner').style.display='block';
   addMsg({name:'Commissioner Bot',text:T.lead('Mista Waltas','Mr Whiskey'),ts:Date.now(),bot:true},false);
-  addMsg({name:'Commissioner Bot',text:T.drop('Diabetuuuus Brian',3,7),ts:Date.now(),bot:true},false);
-  addMsg({name:'Commissioner Bot',text:T.climb('Tbentlaaaaa',2,5),ts:Date.now(),bot:true},false);
+  addMsg({name:'Commissioner Bot',text:T.drop('Diabetus Brian',3,7),ts:Date.now(),bot:true},false);
+  addMsg({name:'Commissioner Bot',text:T.climb('Tbentlaaa',2,5),ts:Date.now(),bot:true},false);
   addPollCard({id:1, question:'Who takes Event 5?', options:['Dallin Pepper','Ricky Garard','The field'], created_by:'Big Daddy Lee', ts:Date.now()});
 }
 else scheduleRefresh();
