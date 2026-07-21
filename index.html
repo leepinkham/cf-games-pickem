@@ -53,6 +53,18 @@ nav.jump a:hover{color:#fff;background:var(--surface2)}
 .count .num{font-family:'Barlow Condensed';font-size:30px;font-weight:800;line-height:1}
 .count .lab{font-size:10px;color:var(--ink3);letter-spacing:.18em;text-transform:uppercase;margin-top:3px}
 
+/* ---------- pot ---------- */
+.potcard{display:flex;align-items:center;gap:18px;background:linear-gradient(120deg,rgba(232,185,59,.14),rgba(232,185,59,.04) 55%,transparent);border:1px solid rgba(232,185,59,.4);padding:12px 18px;margin-top:16px;flex-wrap:wrap}
+.potcard .pico{font-size:26px}
+.potcard .plab{font-family:'Barlow Condensed';text-transform:uppercase;letter-spacing:.14em;font-size:13px;color:var(--ink3);font-weight:700}
+.potcard .amt{font-family:'Barlow Condensed';font-weight:800;font-size:38px;color:var(--gold);line-height:1}
+.potcard .split{display:flex;gap:10px;margin-left:auto;flex-wrap:wrap}
+.pay{background:var(--surface);border:1px solid var(--line);padding:7px 12px;text-align:center;min-width:78px}
+.pay .pv{font-family:'Barlow Condensed';font-weight:800;font-size:20px;line-height:1}
+.pay.g .pv{color:var(--gold)} .pay.s .pv{color:var(--silver)} .pay.b .pv{color:var(--bronze)}
+.pay .pl{font-size:9.5px;color:var(--ink3);letter-spacing:.12em;text-transform:uppercase;margin-top:2px}
+.srow .cash{color:var(--gold);font-weight:700}
+
 /* ---------- layout ---------- */
 .grid{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:18px;margin-top:18px}
 @media(max-width:980px){.grid{grid-template-columns:1fr}}
@@ -193,6 +205,8 @@ footer{margin-top:36px;padding-top:18px;border-top:1px solid var(--line);font-si
       <div class="cell"><div class="num disp" id="cd-s">–</div><div class="lab">Sec</div></div>
     </div>
   </div>
+
+  <div class="potcard" id="potCard"></div>
 
   <div id="previewBanner" class="previewbanner" style="display:none">PREVIEW MODE — mock results for demonstration. Real scores appear once the Games begin.</div>
 
@@ -335,6 +349,14 @@ function computeStandings(live){
   }).sort((a,b)=> b.total-a.total || b.exact-a.exact || a.p.name.localeCompare(b.p.name));
 }
 
+/* ================= POT ================= */
+const BUY_IN = 10;
+function payouts(){ const pot = PARTICIPANTS.length*BUY_IN; return {pot, p1:Math.round(pot*.7), p2:Math.round(pot*.2), p3:Math.round(pot*.1)}; }
+function renderPot(){
+  const {pot,p1,p2,p3} = payouts();
+  $('potCard').innerHTML = `<span class="pico">💰</span><div><div class="plab">The Pot · $${BUY_IN} buy-in × ${PARTICIPANTS.length} players</div><div class="amt disp">$${pot}</div></div><div class="split"><div class="pay g"><div class="pv disp">$${p1}</div><div class="pl">1st · 70%</div></div><div class="pay s"><div class="pv disp">$${p2}</div><div class="pl">2nd · 20%</div></div><div class="pay b"><div class="pv disp">$${p3}</div><div class="pl">3rd · 10%</div></div></div>`;
+}
+
 /* ================= RENDER ================= */
 const $ = id => document.getElementById(id);
 let LIVE=null, PREV_RANKS=null, curTab='men';
@@ -358,7 +380,7 @@ function renderStandings(){
     div.className='srow r'+rank;
     div.innerHTML=`<div class="rk disp">${started?rank:'–'}</div>
       <div class="who"><div class="nm">${r.p.name}${r.p.real?` <span style="color:var(--ink3);font-weight:400;font-size:12px">· ${r.p.real}</span>`:''}</div>
-      <div class="hits">${started? `<b>${r.exact}</b> exact · M ${r.m.total} / W ${r.w.total}${(r.m.perfect||r.w.perfect)?' · 🏆 PERFECT BOARD':''}` : 'Board locked in'}</div></div>
+      <div class="hits">${started? `<b>${r.exact}</b> exact · M ${r.m.total} / W ${r.w.total}${rank<=3?` · <span class="cash">${['🥇 $'+payouts().p1,'🥈 $'+payouts().p2,'🥉 $'+payouts().p3][rank-1]}</span>`:''}${(r.m.perfect||r.w.perfect)?' · 🏆 PERFECT BOARD':''}` : 'Board locked in'}</div></div>
       ${started?mv:'<span class="mv fl"></span>'}
       <div class="pts disp">${r.total}<small> PTS</small></div>`;
     el.appendChild(div);
@@ -428,7 +450,7 @@ function renderStatus(){
   if(LIVE&&LIVE.note) $('lbNote').textContent = LIVE.note;
 }
 
-function renderAll(){ renderStandings(); renderLive(); renderBoards(); renderStatus(); }
+function renderAll(){ renderStandings(); renderLive(); renderBoards(); renderStatus(); renderPot(); }
 
 /* tabs */
 $('tabM').onclick=()=>{curTab='men';$('tabM').classList.add('on');$('tabW').classList.remove('on');renderLive();};
