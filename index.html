@@ -97,7 +97,15 @@ section.card{background:var(--surface);border:1px solid var(--line)}
 .lb-tabs{display:flex;margin-left:auto}
 .lb-tabs button{background:none;border:1px solid var(--line);color:var(--ink2);font-family:'Barlow Condensed';text-transform:uppercase;font-weight:700;font-size:15px;letter-spacing:.06em;padding:5px 16px;cursor:pointer}
 .lb-tabs button.on{background:var(--red);border-color:var(--red);color:#fff}
-.lb{padding:6px 8px 12px}
+.lb{padding:6px 8px 12px;max-height:660px;overflow-y:auto}
+.lb-sub{display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.lb-vtabs{display:flex}
+.lb-vtabs button{background:none;border:1px solid var(--line);color:var(--ink2);font-family:'Barlow Condensed';text-transform:uppercase;font-weight:700;font-size:13px;letter-spacing:.06em;padding:4px 13px;cursor:pointer}
+.lb-vtabs button.on{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.lb-epills{display:flex;gap:4px;flex-wrap:wrap;margin-left:auto}
+.lb-epills button{background:var(--surface2);border:1px solid var(--line);color:var(--ink2);font-family:'Barlow Condensed';font-weight:700;font-size:12px;padding:3px 9px;cursor:pointer}
+.lb-epills button.on{background:var(--red);border-color:var(--red);color:#fff}
+.lb-erank{font-size:11px;color:var(--ink3);padding:6px 14px 2px;letter-spacing:.06em;text-transform:uppercase;font-weight:600}
 .lbrow{display:grid;grid-template-columns:36px minmax(0,1fr) auto;align-items:center;gap:8px;padding:7px 10px;border-bottom:1px solid rgba(42,42,49,.6);font-size:14px}
 .lbrow:last-child{border-bottom:none}
 .lbrow .rk{font-family:'Barlow Condensed';font-weight:800;font-size:19px;color:var(--ink2);text-align:center}
@@ -249,7 +257,11 @@ footer{margin-top:36px;padding-top:18px;border-top:1px solid var(--line);font-si
         <div class="bar"></div><h2 class="disp">Games Leaderboard</h2>
         <div class="lb-tabs disp"><button id="tabM" class="on">Men</button><button id="tabW">Women</button></div>
       </div>
-      <div class="lb" id="lbList"><div class="lb-empty">The Games are LIVE — top-10 populates the moment scores post.<br>Athletes in someone's picks get flagged.</div></div>
+      <div class="lb-sub">
+        <div class="lb-vtabs disp"><button id="viewOverall" class="on">Overall</button><button id="viewEvents">By Event</button></div>
+        <div class="lb-epills disp" id="epills" style="display:none"></div>
+      </div>
+      <div class="lb" id="lbList"><div class="lb-empty">The Games are LIVE — the full field populates the moment scores post.<br>Athletes in someone's picks get flagged.</div></div>
       <div class="lb-note"><span id="lbNote">Source: games.crossfit.com</span><span id="lbUpdated"></span></div>
     </section>
   </div>
@@ -361,11 +373,16 @@ const PARTICIPANTS = [
   women:['Lucy Campbell','Lydia Fish','Paige Rodgers','Olivia Kerstetter','Haley Adams']},
 ];
 
+const mockEv = (i) => [
+  {o:1, r:((i+3)%10)+1, d:(8+(i%6))+':'+(('0'+(12+i*3)).slice(-2))},
+  {o:2, r:((i+6)%10)+1, d:(180-i*4)+' reps'},
+  {o:3, r:i+1, d:(9+(i%5))+':'+(('0'+(5+i*4)).slice(-2))+'.'+(('0'+(i*7)%60).slice(-2))},
+];
 const MOCK_LIVE = {
-  status:'live', note:'PREVIEW · mock data — Event 4 of 12 complete',
+  status:'live', note:'PREVIEW · mock data — 3 events complete',
   updatedAt:new Date().toISOString(),
-  men:[['Dallin Pepper',412],['James Sprague',396],['Ricky Garard',380],['Jayson Hopper',344],['Roman Khrennikov',333],['Jeffrey Adler',321],['Jay Crouch',300],['Ty Jenkins',288],['Austin Hatfield',270],['Justin Medeiros',262]].map((a,i)=>({rank:i+1,name:a[0],points:a[1]})),
-  women:[['Emma Lawson',430],['Lucy Campbell',401],['Alex Gazan',377],['Olivia Kerstetter',350],['Paige Rodgers',340],['Aimee Cringle',322],['Alexis Raptis',310],['Danielle Brandon',295],['Arielle Loewen',280],['Haley Adams',266]].map((a,i)=>({rank:i+1,name:a[0],points:a[1]})),
+  men:[['Dallin Pepper',412],['James Sprague',396],['Ricky Garard',380],['Jayson Hopper',344],['Roman Khrennikov',333],['Jeffrey Adler',321],['Jay Crouch',300],['Ty Jenkins',288],['Austin Hatfield',270],['Justin Medeiros',262]].map((a,i)=>({rank:i+1,name:a[0],points:a[1],events:mockEv(i)})),
+  women:[['Emma Lawson',430],['Lucy Campbell',401],['Alex Gazan',377],['Olivia Kerstetter',350],['Paige Rodgers',340],['Aimee Cringle',322],['Alexis Raptis',310],['Danielle Brandon',295],['Arielle Loewen',280],['Haley Adams',266]].map((a,i)=>({rank:i+1,name:a[0],points:a[1],events:mockEv(i)})),
 };
 
 /* ================= SCORING ================= */
@@ -453,7 +470,7 @@ function titleFlav(name, good){
 
 /* ================= RENDER ================= */
 const $ = id => document.getElementById(id);
-let LIVE=null, PREV_RANKS=null, curTab='men';
+let LIVE=null, PREV_RANKS=null, curTab='men', curView='overall', curEvent=1;
 
 function initials(n){return n.split(/\s+/).map(w=>w[0]).slice(0,2).join('').toUpperCase()}
 
@@ -483,19 +500,56 @@ function renderStandings(){
   window._leaderId = leaderId;
 }
 
+function maxEventOf(data){ return data ? data.reduce((m,a)=>Math.max(m, (a.events||[]).reduce((x,e)=>Math.max(x,e.o),0)),0) : 0; }
+function buildEventPills(maxEv){
+  const box=$('epills');
+  if(curView!=='events' || maxEv<=0){ box.style.display='none'; box.innerHTML=''; return; }
+  box.style.display='flex';
+  if(curEvent>maxEv) curEvent=maxEv;
+  if(curEvent<1) curEvent=1;
+  box.innerHTML='';
+  for(let i=1;i<=maxEv;i++){
+    const b=document.createElement('button');
+    b.textContent='E'+i; if(i===curEvent) b.className='on';
+    b.onclick=()=>{ curEvent=i; renderLive(); };
+    box.appendChild(b);
+  }
+}
 function renderLive(){
   const el=$('lbList');
   const data = LIVE && LIVE[curTab] && LIVE[curTab].length? LIVE[curTab] : null;
-  if(!data){ el.innerHTML='<div class="lb-empty">The Games are LIVE — top-10 populates the moment scores post.<br>Athletes in someone\'s picks get flagged.</div>'; return; }
   const pickedBy = {};
   PARTICIPANTS.forEach(p=>{ (curTab==='men'?p.men:p.women).forEach(nm=>{ (pickedBy[norm(nm)]=pickedBy[norm(nm)]||[]).push(p.name.split(' ')[0]); }); });
+  const maxEv = maxEventOf(data);
+  buildEventPills(maxEv);
+  if(!data){ el.innerHTML='<div class="lb-empty">The Games are LIVE — the full field populates the moment scores post.<br>Athletes in someone\'s picks get flagged.</div>'; return; }
+  const pbTag = nm => { const pb=pickedBy[norm(nm)]; return pb?`<span class="picked">● picked by ${pb.length}</span>`:''; };
+
+  if(curView==='events'){
+    if(maxEv<=0){ el.innerHTML='<div class="lb-empty">No event results posted yet.<br>Event-by-event finishes and times appear here as each workout is scored.</div>'; return; }
+    const ev = Math.min(Math.max(curEvent,1), maxEv);
+    const withEv = data.map(a=>{ const e=(a.events||[]).find(x=>x.o===ev); return e && e.r!=null ? {a, r:e.r, d:e.d} : null; })
+      .filter(Boolean).sort((x,y)=>x.r-y.r);
+    if(!withEv.length){ el.innerHTML='<div class="lb-empty">Event '+ev+' hasn\'t been scored yet.</div>'; return; }
+    el.innerHTML='<div class="lb-erank">Event '+ev+' finishes · '+withEv.length+' scored</div>';
+    withEv.forEach(x=>{
+      const div=document.createElement('div');
+      div.className='lbrow'+(x.r<=3?' podium':'');
+      div.innerHTML=`<div class="rk disp">${x.r}</div>
+        <div class="nm">${x.a.name}${pbTag(x.a.name)}</div>
+        <div class="sc">${x.d||''}</div>`;
+      el.appendChild(div);
+    });
+    return;
+  }
+
+  // OVERALL — full field (all athletes)
   el.innerHTML='';
-  data.slice(0,10).forEach(a=>{
-    const pb = pickedBy[norm(a.name)];
+  data.forEach(a=>{
     const div=document.createElement('div');
     div.className='lbrow'+(a.rank<=3?' podium':'');
     div.innerHTML=`<div class="rk disp">${a.rank}</div>
-      <div class="nm">${a.name}${pb?`<span class="picked">● picked by ${pb.length}</span>`:''}</div>
+      <div class="nm">${a.name}${pbTag(a.name)}</div>
       <div class="sc">${a.points!=null?a.points+' pts':''}</div>`;
     el.appendChild(div);
   });
@@ -585,6 +639,8 @@ function renderAll(){ renderStandings(); renderLive(); renderBoards(); renderSta
 /* tabs */
 $('tabM').onclick=()=>{curTab='men';$('tabM').classList.add('on');$('tabW').classList.remove('on');renderLive();};
 $('tabW').onclick=()=>{curTab='women';$('tabW').classList.add('on');$('tabM').classList.remove('on');renderLive();};
+$('viewOverall').onclick=()=>{curView='overall';$('viewOverall').classList.add('on');$('viewEvents').classList.remove('on');renderLive();};
+$('viewEvents').onclick=()=>{curView='events';$('viewEvents').classList.add('on');$('viewOverall').classList.remove('on');renderLive();};
 
 /* countdown */
 setInterval(()=>{
@@ -780,13 +836,18 @@ async function fetchDivision(d){
         rank: parseInt(row.overallRank,10) || null,
         name: row.entrant && row.entrant.competitorName || '',
         points: parseInt(row.overallScore,10) || 0,
+        events: (row.scores||[]).map(s=>({
+          o: parseInt(s.ordinal,10) || 0,
+          r: parseInt(s.rank,10) || null,
+          d: (s.scoreDisplay || s.mobileScoreDisplay || '').trim(),
+        })).filter(e=>e.o && e.r!=null),
       })).filter(a=>a.name);
       if(rows.length) return rows;
     }catch(e){/* next relay */}
   }
   return null;
 }
-const fingerprint = v => !v?'':['men','women'].map(k=>(v[k]||[]).map(a=>`${a.rank}:${norm(a.name)}:${a.points}`).join('|')).join('||');
+const fingerprint = v => !v?'':['men','women'].map(k=>(v[k]||[]).map(a=>`${a.rank}:${norm(a.name)}:${a.points}:${(a.events||[]).length}`).join('|')).join('||');
 function ranksOf(live){
   const out={}; computeStandings(live).forEach((r,i)=>out[r.p.id]=i+1); return out;
 }
