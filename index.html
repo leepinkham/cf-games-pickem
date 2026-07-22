@@ -249,7 +249,7 @@ footer{margin-top:36px;padding-top:18px;border-top:1px solid var(--line);font-si
         <div class="bar"></div><h2 class="disp">Games Leaderboard</h2>
         <div class="lb-tabs disp"><button id="tabM" class="on">Men</button><button id="tabW">Women</button></div>
       </div>
-      <div class="lb" id="lbList"><div class="lb-empty">Live top-10 appears here when competition starts Friday.<br>Athletes in someone's picks get flagged.</div></div>
+      <div class="lb" id="lbList"><div class="lb-empty">The Games are LIVE — top-10 populates the moment scores post.<br>Athletes in someone's picks get flagged.</div></div>
       <div class="lb-note"><span id="lbNote">Source: games.crossfit.com</span><span id="lbUpdated"></span></div>
     </section>
   </div>
@@ -486,7 +486,7 @@ function renderStandings(){
 function renderLive(){
   const el=$('lbList');
   const data = LIVE && LIVE[curTab] && LIVE[curTab].length? LIVE[curTab] : null;
-  if(!data){ el.innerHTML='<div class="lb-empty">Live top-10 appears here when competition starts Friday.<br>Athletes in someone\'s picks get flagged.</div>'; return; }
+  if(!data){ el.innerHTML='<div class="lb-empty">The Games are LIVE — top-10 populates the moment scores post.<br>Athletes in someone\'s picks get flagged.</div>'; return; }
   const pickedBy = {};
   PARTICIPANTS.forEach(p=>{ (curTab==='men'?p.men:p.women).forEach(nm=>{ (pickedBy[norm(nm)]=pickedBy[norm(nm)]||[]).push(p.name.split(' ')[0]); }); });
   el.innerHTML='';
@@ -822,10 +822,8 @@ async function refreshLive(){
   return true;
 }
 function scheduleRefresh(){
-  const now = new Date();
-  const inWindow = now >= new Date(COMP_START.getTime()-3600e3) && now <= COMP_END;
   refreshLive();
-  setInterval(refreshLive, inWindow? 120e3 : 15*60e3);
+  setInterval(()=>{ const now=new Date(); if(now >= new Date(COMP_START.getTime()-3600e3) && now <= new Date(COMP_END.getTime()+3600e3)) refreshLive(); }, 120e3);
   document.addEventListener('visibilitychange',()=>{ if(!document.hidden) refreshLive(); });
 }
 
