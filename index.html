@@ -106,6 +106,20 @@ section.card{background:var(--surface);border:1px solid var(--line)}
 .lb-epills button{background:var(--surface2);border:1px solid var(--line);color:var(--ink2);font-family:'Barlow Condensed';font-weight:700;font-size:12px;padding:3px 9px;cursor:pointer}
 .lb-epills button.on{background:var(--red);border-color:var(--red);color:#fff}
 .lb-erank{font-size:11px;color:var(--ink3);padding:6px 14px 2px;letter-spacing:.06em;text-transform:uppercase;font-weight:600}
+.lbitem{border-bottom:1px solid rgba(42,42,49,.6)}
+.lbitem:last-child{border-bottom:none}
+.lbrow.click{border-bottom:none;cursor:pointer}
+.lbrow.click:hover{background:var(--surface2)}
+.lbrow.click .nm{display:flex;align-items:center;gap:6px;min-width:0}
+.lbrow.click .ntxt{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.lbrow.click .caret{flex:none;font-size:9px;color:var(--ink3);transition:transform .15s ease}
+.lbrow.click.open .caret{transform:rotate(180deg);color:var(--ink2)}
+.lbdetail{padding:3px 12px 9px 46px;display:flex;flex-direction:column;gap:1px;background:rgba(0,0,0,.18)}
+.evrow{display:grid;grid-template-columns:32px 48px 1fr;gap:8px;font-size:12px;padding:2px 0;align-items:baseline}
+.evrow .evn{font-family:'Barlow Condensed';font-weight:700;color:var(--ink3);letter-spacing:.04em}
+.evrow .evr{color:var(--ink2);font-weight:600}
+.evrow .evd{color:var(--ink);text-align:right;font-variant-numeric:tabular-nums}
+.evrow.none{color:var(--ink3);grid-template-columns:1fr}
 .lbrow{display:grid;grid-template-columns:36px minmax(0,1fr) auto;align-items:center;gap:8px;padding:7px 10px;border-bottom:1px solid rgba(42,42,49,.6);font-size:14px}
 .lbrow:last-child{border-bottom:none}
 .lbrow .rk{font-family:'Barlow Condensed';font-weight:800;font-size:19px;color:var(--ink2);text-align:center}
@@ -471,6 +485,7 @@ function titleFlav(name, good){
 /* ================= RENDER ================= */
 const $ = id => document.getElementById(id);
 let LIVE=null, PREV_RANKS=null, curTab='men', curView='overall', curEvent=1;
+const expandedRows=new Set();
 
 function initials(n){return n.split(/\s+/).map(w=>w[0]).slice(0,2).join('').toUpperCase()}
 
@@ -543,15 +558,23 @@ function renderLive(){
     return;
   }
 
-  // OVERALL — full field (all athletes)
+  // OVERALL — full field (all athletes); click a name to expand event splits
   el.innerHTML='';
   data.forEach(a=>{
-    const div=document.createElement('div');
-    div.className='lbrow'+(a.rank<=3?' podium':'');
-    div.innerHTML=`<div class="rk disp">${a.rank}</div>
-      <div class="nm">${a.name}${pbTag(a.name)}</div>
-      <div class="sc">${a.points!=null?a.points+' pts':''}</div>`;
-    el.appendChild(div);
+    const key=norm(a.name), open=expandedRows.has(key);
+    const evs=(a.events||[]).slice().sort((x,y)=>x.o-y.o);
+    const detail = evs.length
+      ? evs.map(e=>`<div class="evrow"><span class="evn">E${e.o}</span><span class="evr">${ord(e.r)}</span><span class="evd">${(e.d||'—').replace(/\s*\(\d+p\)\s*$/,'')}</span></div>`).join('')
+      : '<div class="evrow none">No event splits posted yet.</div>';
+    const item=document.createElement('div');
+    item.className='lbitem';
+    item.innerHTML=`<div class="lbrow click${a.rank<=3?' podium':''}${open?' open':''}" data-nm="${key}">
+        <div class="rk disp">${a.rank}</div>
+        <div class="nm"><span class="ntxt">${a.name}${pbTag(a.name)}</span><span class="caret">▼</span></div>
+        <div class="sc">${a.points!=null?a.points+' pts':''}</div>
+      </div>
+      <div class="lbdetail"${open?'':' style="display:none"'}>${detail}</div>`;
+    el.appendChild(item);
   });
 }
 
@@ -641,6 +664,13 @@ $('tabM').onclick=()=>{curTab='men';$('tabM').classList.add('on');$('tabW').clas
 $('tabW').onclick=()=>{curTab='women';$('tabW').classList.add('on');$('tabM').classList.remove('on');renderLive();};
 $('viewOverall').onclick=()=>{curView='overall';$('viewOverall').classList.add('on');$('viewEvents').classList.remove('on');renderLive();};
 $('viewEvents').onclick=()=>{curView='events';$('viewEvents').classList.add('on');$('viewOverall').classList.remove('on');renderLive();};
+$('lbList').addEventListener('click', e=>{
+  const row=e.target.closest('.lbrow.click'); if(!row) return;
+  const nm=row.dataset.nm, open=!expandedRows.has(nm);
+  if(open) expandedRows.add(nm); else expandedRows.delete(nm);
+  row.classList.toggle('open', open);
+  const d=row.nextElementSibling; if(d && d.classList.contains('lbdetail')) d.style.display = open?'':'none';
+});
 
 /* countdown */
 setInterval(()=>{
